@@ -1,0 +1,65 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("MONGODB_URL")
+}
+
+model Tool {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  name String
+  description String
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  agentTemplates AgentTemplate[]
+}
+
+model Agent {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+  messages Json
+  
+  templateId String @db.ObjectId
+  template AgentTemplate @relation(fields: [templateId], references: [id])
+  
+  projectId String @db.ObjectId
+  project Project @relation(fields: [projectId], references: [id])
+  
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Project {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+  name String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  agents Agent[]
+}
+
+model AgentTemplate {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+
+  name String
+  systemPrompt String 
+  model String
+  temperature Float
+
+  toolsId String @db.ObjectId
+  tools Tool @relation(fields: [toolsId], references: [id])
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  agents Agent[]
+}
