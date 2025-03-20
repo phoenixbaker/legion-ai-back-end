@@ -19,6 +19,8 @@ model Tool {
   name String
   description String
 
+  enabled Boolean
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
