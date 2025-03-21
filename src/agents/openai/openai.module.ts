@@ -1,12 +1,10 @@
 import { Module } from '@nestjs/common';
-import OpenAI from 'openai';
+import { OpenaiService } from './openai.service';
+import { ConfigService } from '../../config/config.service';
 
-@Module({})
-export class OpenaiModule extends OpenAI {
-  constructor() {
-    super({
-      apiKey: process.env.OPENROUTER_API_KEY,
-      baseURL: 'https://openrouter.ai/api/v1',
-    });
-  }
-}
+@Module({
+  imports: [ConfigService],
+  providers: [OpenaiService],
+  exports: [OpenaiService],
+})
+export class OpenaiModule {}
