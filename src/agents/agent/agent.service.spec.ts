@@ -2,8 +2,8 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { AgentService } from './agent.service';
 import { ToolsService } from '../tools/tools.service';
 import { PrismaService } from '../../prisma/prisma.service';
-import OpenAI from 'openai';
 import { Message } from '@prisma/client';
+import { OpenaiService } from '../openai/openai.service';
 
 const mockOpenai = {
   chat: {
@@ -79,7 +79,7 @@ describe('AgentService', () => {
         AgentService,
         { provide: PrismaService, useValue: mockPrismaService },
         { provide: ToolsService, useValue: mockToolsService },
-        { provide: OpenAI, useValue: mockOpenai },
+        { provide: OpenaiService, useValue: mockOpenai },
       ],
     }).compile();
 
@@ -104,7 +104,6 @@ describe('AgentService', () => {
   });
 
   it('should send a message', async () => {
-    service.setOpenAIClient(mockOpenai as any);
     await service.sendMessage('mock-agent', 'mock-message');
 
     expect(mockOpenai.chat.completions.create).toHaveBeenCalled();

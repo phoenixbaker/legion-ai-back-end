@@ -1,6 +1,5 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
-import { OpenAI } from 'openai';
 import { Message } from '@prisma/client';
 import {
   ChatCompletionMessageParam,
@@ -8,24 +7,15 @@ import {
   ChatCompletionToolChoiceOption,
 } from 'openai/resources/chat';
 import { ToolsService } from '../tools/tools.service';
+import { OpenaiService } from '../openai/openai.service';
 
 @Injectable()
 export class AgentService {
-  private openai: OpenAI;
-
   constructor(
     private prisma: PrismaService,
     private toolsService: ToolsService,
-  ) {
-    this.openai = new OpenAI({
-      apiKey: process.env.OPENROUTER_API_KEY || '',
-      baseURL: 'https://openrouter.ai/api/v1',
-    });
-  }
-
-  public setOpenAIClient(client: OpenAI) {
-    this.openai = client;
-  }
+    private openai: OpenaiService,
+  ) {}
 
   public async createAgent(templateId: string, projectId: string) {
     return this.prisma.agent.create({
