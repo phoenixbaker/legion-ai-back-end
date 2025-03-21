@@ -129,19 +129,6 @@ describe('AgentService', () => {
     });
   });
 
-  it('should update an agent', async () => {
-    const result = await service.updateAgent('mock-agent', {
-      id: 'new-mock-agent-id',
-    });
-
-    expect(result).toBeDefined();
-    expect(mockPrismaService.agent.update).toHaveBeenCalledWith({
-      where: { id: 'mock-agent' },
-      data: { id: 'new-mock-agent-id' },
-    });
-    expect(result.id).toBe('new-mock-agent-id');
-  });
-
   it('should send a message', async () => {
     await service.sendMessage('mock-agent', 'mock-message');
 

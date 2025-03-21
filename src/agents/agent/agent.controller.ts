@@ -1,14 +1,5 @@
-import {
-  Body,
-  Controller,
-  Delete,
-  Get,
-  Post,
-  Put,
-  Query,
-} from '@nestjs/common';
+import { Body, Controller, Delete, Get, Post, Query } from '@nestjs/common';
 import { AgentService } from './agent.service';
-import { Agent } from '@prisma/client';
 import { CreateUserDto } from './dto';
 
 @Controller('agent')
@@ -23,11 +14,6 @@ export class AgentController {
   @Delete(':id')
   async deleteAgent(@Query('id') id: string) {
     return this.agentService.deleteAgent(id);
-  }
-
-  @Put(':id')
-  async updateAgent(@Query('id') id: string, @Body() dto: Partial<Agent>) {
-    return this.agentService.updateAgent(id, dto);
   }
 
   @Post()

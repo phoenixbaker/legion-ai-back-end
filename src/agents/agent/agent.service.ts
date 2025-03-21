@@ -36,13 +36,6 @@ export class AgentService {
     });
   }
 
-  public async updateAgent(id: string, data: Partial<Agent>): Promise<Agent> {
-    return this.prisma.agent.update({
-      where: { id },
-      data,
-    });
-  }
-
   public async createAgent(
     templateId: string,
     projectId: string,

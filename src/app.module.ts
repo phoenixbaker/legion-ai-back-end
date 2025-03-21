@@ -3,17 +3,19 @@ import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AgentModule } from './agents/agent/agent.module';
 import { TemplateModule } from './agents/template/template.module';
-import { ConfigModule } from './config/config.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { ProjectModule } from './project/project.module';
 import { ToolsModule } from './agents/tools/tools.module';
 import { OpenaiModule } from './agents/openai/openai.module';
+import { ConfigModule } from '@nestjs/config';
 
 @Module({
   imports: [
     AgentModule,
     TemplateModule,
-    ConfigModule,
+    ConfigModule.forRoot({
+      isGlobal: true,
+    }),
     PrismaModule,
     ProjectModule,
     ToolsModule,

@@ -1,17 +1,14 @@
 import { Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { PrismaClient } from '@prisma/client';
-
-import { config } from 'dotenv';
-
-config();
 
 @Injectable()
 export class PrismaService extends PrismaClient {
-  constructor() {
+  constructor(configService: ConfigService) {
     super({
       datasources: {
         db: {
-          url: process.env.MONGODB_URL,
+          url: configService.get<string>('MONGODB_URL'),
         },
       },
     });

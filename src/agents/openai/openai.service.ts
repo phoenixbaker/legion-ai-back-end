@@ -1,5 +1,5 @@
-import { ConfigService } from '../../config/config.service';
 import { Injectable } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import OpenAI from 'openai';
 
 @Injectable()
