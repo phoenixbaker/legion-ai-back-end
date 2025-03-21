@@ -13,27 +13,28 @@ datasource db {
   url      = env("MONGODB_URL")
 }
 
-model Tool {
+model Message {
   id String @id @default(auto()) @map("_id") @db.ObjectId
 
-  name String
-  description String
+  content String
+  role String
 
-  enabled Boolean
-
+  agentId String @db.ObjectId 
+  agent Agent @relation(fields: [agentId], references: [id])
+  
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
-
-  agentTemplates AgentTemplate[]
 }
 
 model Agent {
   id String @id @default(auto()) @map("_id") @db.ObjectId
-  messages Json
+  messages Message[] 
   
   templateId String @db.ObjectId
   template AgentTemplate @relation(fields: [templateId], references: [id])
   
+  tools String[]
+
   projectId String @db.ObjectId
   project Project @relation(fields: [projectId], references: [id])
   
@@ -57,8 +58,7 @@ model AgentTemplate {
   model String
   temperature Float
 
-  toolsId String @db.ObjectId
-  tools Tool @relation(fields: [toolsId], references: [id])
+  tools String[]
 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
