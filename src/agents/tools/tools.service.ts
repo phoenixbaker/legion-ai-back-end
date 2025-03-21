@@ -44,6 +44,9 @@ export class ToolsService {
     toolFunction: ToolFunction,
     chatCompletionTool: ChatCompletionTool,
   ) {
+    if (name !== chatCompletionTool.function.name) {
+      throw new Error('tool name must match the function name');
+    }
     this.globalToolMap[name] = toolFunction;
     this.toolDefinitions[name] = chatCompletionTool;
   }
