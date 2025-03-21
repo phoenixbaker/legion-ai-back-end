@@ -41,7 +41,6 @@ model Agent {
   id String @id @default(auto()) @map("_id") @db.ObjectId
   templateId String @db.ObjectId
   template AgentTemplate @relation(fields: [templateId], references: [id])
-  tools String[]
   projectId String @db.ObjectId
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt

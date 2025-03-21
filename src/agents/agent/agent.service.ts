@@ -1,6 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
-import { Message } from '@prisma/client';
+import { Agent, Message } from '@prisma/client';
 import {
   ChatCompletionMessageParam,
   ChatCompletionMessageToolCall,
@@ -17,12 +17,40 @@ export class AgentService {
     private openai: OpenaiService,
   ) {}
 
-  public async createAgent(templateId: string, projectId: string) {
+  public async getAgent(id: string): Promise<Agent | null> {
+    return this.prisma.agent.findUnique({
+      where: { id },
+      include: {
+        template: true,
+        messages: true,
+        project: true,
+        receivedMessages: true,
+        sentMessages: true,
+      },
+    });
+  }
+
+  public async deleteAgent(id: string): Promise<Agent> {
+    return this.prisma.agent.delete({
+      where: { id },
+    });
+  }
+
+  public async updateAgent(id: string, data: Partial<Agent>): Promise<Agent> {
+    return this.prisma.agent.update({
+      where: { id },
+      data,
+    });
+  }
+
+  public async createAgent(
+    templateId: string,
+    projectId: string,
+  ): Promise<Agent> {
     return this.prisma.agent.create({
       data: {
         templateId,
         projectId,
-        tools: ['say-hi', 'say-bye'],
       },
     });
   }
@@ -46,7 +74,7 @@ export class AgentService {
     }
 
     const messages = this.formatMessages(agent.messages, message, toolCalled);
-    const tools = this.toolsService.getTools(agent.tools);
+    const tools = this.toolsService.getTools(agent.template.tools);
 
     let tool_choice: ChatCompletionToolChoiceOption = 'auto';
     if (currentRetries >= 3) {

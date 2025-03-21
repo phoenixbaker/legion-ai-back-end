@@ -36,28 +36,30 @@ const mockToolsService = {
   ]),
 };
 
+const mockAgent = {
+  id: 'mock-agent-id',
+  templateId: 'mock-template-id',
+  tools: ['say-hi', 'say-bye'],
+  projectId: 'mock-project-id',
+  createdAt: new Date(),
+  updatedAt: new Date(),
+};
+
 const mockPrismaService = {
   agent: {
-    create: jest.fn().mockResolvedValue({
-      id: '123',
-      templateId: 'mock-template',
-      tools: ['say-hi', 'say-bye'],
-      projectId: 'mock-project',
-      createdAt: Date.now(),
-      updatedAt: Date.now(),
-    }),
+    delete: jest.fn().mockResolvedValue(mockAgent),
+    create: jest.fn().mockResolvedValue(mockAgent),
     findUnique: jest.fn().mockResolvedValue({
-      id: '123',
-      templateId: 'mock-template',
-      tools: ['say-hi', 'say-bye'],
-      projectId: 'mock-project',
-      createdAt: Date.now(),
-      updatedAt: Date.now(),
+      ...mockAgent,
       messages: [],
       template: {
         model: 'mock-model',
         temperature: 0.7,
       },
+    }),
+    update: jest.fn().mockResolvedValue({
+      ...mockAgent,
+      id: 'new-mock-agent-id',
     }),
   },
   message: {
@@ -90,6 +92,31 @@ describe('AgentService', () => {
     expect(service).toBeDefined();
   });
 
+  it('should get an agent', async () => {
+    const result = await service.getAgent('mock-agent');
+
+    expect(result).toBeDefined();
+    expect(mockPrismaService.agent.findUnique).toHaveBeenCalledWith({
+      where: { id: 'mock-agent' },
+      include: {
+        template: true,
+        messages: true,
+        project: true,
+        receivedMessages: true,
+        sentMessages: true,
+      },
+    });
+  });
+
+  it('should delete an agent', async () => {
+    const result = await service.deleteAgent('mock-agent');
+
+    expect(result).toBeDefined();
+    expect(mockPrismaService.agent.delete).toHaveBeenCalledWith({
+      where: { id: 'mock-agent' },
+    });
+  });
+
   it('should create an agent', async () => {
     const result = await service.createAgent('mock-template', 'mock-project');
 
@@ -98,9 +125,21 @@ describe('AgentService', () => {
       data: {
         templateId: 'mock-template',
         projectId: 'mock-project',
-        tools: ['say-hi', 'say-bye'],
       },
     });
+  });
+
+  it('should update an agent', async () => {
+    const result = await service.updateAgent('mock-agent', {
+      id: 'new-mock-agent-id',
+    });
+
+    expect(result).toBeDefined();
+    expect(mockPrismaService.agent.update).toHaveBeenCalledWith({
+      where: { id: 'mock-agent' },
+      data: { id: 'new-mock-agent-id' },
+    });
+    expect(result.id).toBe('new-mock-agent-id');
   });
 
   it('should send a message', async () => {
