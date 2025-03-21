@@ -1,5 +1,5 @@
 import { Injectable } from '@nestjs/common';
-import { PrismaService } from 'src/prisma/prisma.service';
+import { PrismaService } from '../../prisma/prisma.service';
 import { AgentTemplate } from '@prisma/client';
 
 @Injectable()
@@ -15,7 +15,7 @@ export class TemplateService {
   }
 
   public async createAgentTemplate(
-    config: AgentTemplate,
+    config: Omit<AgentTemplate, 'id' | 'createdAt' | 'updatedAt'>,
   ): Promise<AgentTemplate> {
     return await this.prisma.agentTemplate.create({
       data: config,
