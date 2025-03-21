@@ -5,6 +5,7 @@ import { Message } from '@prisma/client';
 import {
   ChatCompletionMessageParam,
   ChatCompletionMessageToolCall,
+  ChatCompletionToolChoiceOption,
 } from 'openai/resources/chat';
 import { ToolsService } from '../tools/tools.service';
 
@@ -15,7 +16,16 @@ export class AgentService {
   constructor(
     private prisma: PrismaService,
     private toolsService: ToolsService,
-  ) {}
+  ) {
+    this.openai = new OpenAI({
+      apiKey: process.env.OPENROUTER_API_KEY || '',
+      baseURL: 'https://openrouter.ai/api/v1',
+    });
+  }
+
+  public setOpenAIClient(client: OpenAI) {
+    this.openai = client;
+  }
 
   public async createAgent(templateId: string, projectId: string) {
     return this.prisma.agent.create({
@@ -31,6 +41,7 @@ export class AgentService {
     agentId: string,
     message: string | null,
     toolCalled: boolean = false,
+    currentRetries: number = 0,
   ) {
     const agent = await this.prisma.agent.findUnique({
       where: { id: agentId },
@@ -47,10 +58,15 @@ export class AgentService {
     const messages = this.formatMessages(agent.messages, message, toolCalled);
     const tools = this.toolsService.getTools(agent.tools);
 
+    let tool_choice: ChatCompletionToolChoiceOption = 'auto';
+    if (currentRetries >= 3) {
+      tool_choice = 'none';
+    }
+
     const response = await this.openai.chat.completions.create({
       model: agent.template.model,
-      temperature: agent.template.temperature,
-      tool_choice: 'auto',
+      temperature: agent.template.temperature ?? 0.7,
+      tool_choice,
       messages,
       tools,
     });
@@ -69,9 +85,9 @@ export class AgentService {
       });
     }
 
-    if (toolCalls && toolCalls.length > 0) {
+    if (toolCalls && toolCalls.length > 0 && currentRetries < 3) {
       this.handleToolCalls(toolCalls, agentId);
-      return this.sendMessage(agentId, '', true);
+      return this.sendMessage(agentId, '', true, currentRetries + 1);
     }
     return;
   }

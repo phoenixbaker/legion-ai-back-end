@@ -7,6 +7,7 @@ import { ConfigModule } from './config/config.module';
 import { PrismaModule } from './prisma/prisma.module';
 import { ProjectModule } from './project/project.module';
 import { ToolsModule } from './agents/tools/tools.module';
+import { OpenaiModule } from './agents/openai/openai.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { ToolsModule } from './agents/tools/tools.module';
     PrismaModule,
     ProjectModule,
     ToolsModule,
+    OpenaiModule,
   ],
   controllers: [AppController],
   providers: [AppService],

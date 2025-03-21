@@ -2,8 +2,40 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { AgentService } from './agent.service';
 import { ToolsService } from '../tools/tools.service';
 import { PrismaService } from '../../prisma/prisma.service';
+import OpenAI from 'openai';
+import { Message } from '@prisma/client';
 
-const mockToolsService = {};
+const mockOpenai = {
+  chat: {
+    completions: {
+      create: jest.fn().mockResolvedValue({
+        choices: [
+          {
+            message: {
+              content: { content: 'mock-content' },
+            },
+          },
+        ],
+      }),
+    },
+  },
+};
+
+const mockToolsService = {
+  getTools: jest.fn().mockReturnValue([
+    {
+      name: 'say-hi',
+      description: 'Say hi to the user',
+      parameters: {},
+    },
+    {
+      name: 'say-bye',
+      description: 'Say bye to the user',
+      parameters: {},
+    },
+  ]),
+};
+
 const mockPrismaService = {
   agent: {
     create: jest.fn().mockResolvedValue({
@@ -14,6 +46,27 @@ const mockPrismaService = {
       createdAt: Date.now(),
       updatedAt: Date.now(),
     }),
+    findUnique: jest.fn().mockResolvedValue({
+      id: '123',
+      templateId: 'mock-template',
+      tools: ['say-hi', 'say-bye'],
+      projectId: 'mock-project',
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+      messages: [],
+      template: {
+        model: 'mock-model',
+        temperature: 0.7,
+      },
+    }),
+  },
+  message: {
+    create: jest.fn().mockResolvedValue({
+      id: '123',
+      agentId: 'mock-agent',
+      content: 'mock-content',
+      role: 'assistant',
+    } as Message),
   },
 };
 
@@ -26,6 +79,7 @@ describe('AgentService', () => {
         AgentService,
         { provide: PrismaService, useValue: mockPrismaService },
         { provide: ToolsService, useValue: mockToolsService },
+        { provide: OpenAI, useValue: mockOpenai },
       ],
     }).compile();
 
@@ -47,5 +101,13 @@ describe('AgentService', () => {
         tools: ['say-hi', 'say-bye'],
       },
     });
+  });
+
+  it('should send a message', async () => {
+    service.setOpenAIClient(mockOpenai as any);
+    await service.sendMessage('mock-agent', 'mock-message');
+
+    expect(mockOpenai.chat.completions.create).toHaveBeenCalled();
+    expect(mockPrismaService.message.create).toHaveBeenCalled();
   });
 });

@@ -13,16 +13,28 @@ datasource db {
   url      = env("MONGODB_URL")
 }
 
+model AgentMessage {
+  id String @id @default(auto()) @map("_id") @db.ObjectId
+  senderId String @db.ObjectId
+  recepientId String @db.ObjectId
+  messageId String @db.ObjectId @unique
+
+  sender Agent @relation("SendMessages", fields: [senderId], references: [id])
+  recepient Agent @relation("ReceivedMessages", fields: [recepientId], references: [id])
+  message Message @relation(fields: [messageId], references: [id])
+}
+
 model Message {
   id String @id @default(auto()) @map("_id") @db.ObjectId
+  agentId String @db.ObjectId 
   content String
   role String
-  agentId String @db.ObjectId 
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   toolName String?
 
   agent Agent @relation(fields: [agentId], references: [id])
+  agentMessages AgentMessage?
 }
 
 model Agent {
@@ -36,6 +48,9 @@ model Agent {
 
   project Project @relation(fields: [projectId], references: [id])
   messages Message[] 
+
+  sentMessages AgentMessage[] @relation("SendMessages")
+  receivedMessages AgentMessage[] @relation("ReceivedMessages")
 
 }
 
