@@ -15,31 +15,28 @@ datasource db {
 
 model Message {
   id String @id @default(auto()) @map("_id") @db.ObjectId
-
   content String
   role String
-
   agentId String @db.ObjectId 
-  agent Agent @relation(fields: [agentId], references: [id])
-  
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+  toolName String?
+
+  agent Agent @relation(fields: [agentId], references: [id])
 }
 
 model Agent {
   id String @id @default(auto()) @map("_id") @db.ObjectId
-  messages Message[] 
-  
   templateId String @db.ObjectId
   template AgentTemplate @relation(fields: [templateId], references: [id])
-  
   tools String[]
-
   projectId String @db.ObjectId
-  project Project @relation(fields: [projectId], references: [id])
-  
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  project Project @relation(fields: [projectId], references: [id])
+  messages Message[] 
+
 }
 
 model Project {
@@ -47,19 +44,17 @@ model Project {
   name String
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
   agents Agent[]
 }
 
 model AgentTemplate {
   id String @id @default(auto()) @map("_id") @db.ObjectId
-
   name String
   systemPrompt String 
   model String
   temperature Float
-
   tools String[]
-
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
