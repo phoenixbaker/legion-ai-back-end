@@ -1,6 +1,6 @@
 import { Body, Controller, Delete, Get, Post, Query } from '@nestjs/common';
 import { AgentService } from './agent.service';
-import { CreateUserDto } from './dto';
+import { CreateAgentDto, MessageAgentDto } from './dto';
 
 @Controller('agent')
 export class AgentController {
@@ -8,16 +8,21 @@ export class AgentController {
 
   @Get(':id')
   async getAgent(@Query('id') id: string) {
-    return this.agentService.getAgent(id);
+    return await this.agentService.getAgent(id);
   }
 
   @Delete(':id')
   async deleteAgent(@Query('id') id: string) {
-    return this.agentService.deleteAgent(id);
+    return await this.agentService.deleteAgent(id);
   }
 
   @Post()
-  async createAgent(@Body() dto: CreateUserDto) {
-    return this.agentService.createAgent(dto.templateId, dto.projectId);
+  async createAgent(@Body() dto: CreateAgentDto) {
+    return await this.agentService.createAgent(dto.templateId, dto.projectId);
+  }
+
+  @Post(':id/chat')
+  async messageAgent(@Query('id') id: string, @Body() dto: MessageAgentDto) {
+    return await this.agentService.sendMessage(id, dto.message);
   }
 }

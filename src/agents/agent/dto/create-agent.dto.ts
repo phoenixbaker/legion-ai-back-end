@@ -1,6 +1,6 @@
 import { IsMongoId, IsNotEmpty } from 'class-validator';
 
-export class CreateUserDto {
+export class CreateAgentDto {
   @IsMongoId()
   @IsNotEmpty()
   templateId: string;
