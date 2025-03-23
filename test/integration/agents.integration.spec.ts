@@ -33,13 +33,13 @@ describe('Agent Module', () => {
       projectId: '67de8c6f98f0ee0db7661c2e',
     });
 
-    console.log(res.body);
     expect(res.status).toBe(201);
     expect(res.body.id).toBeDefined();
     expect(res.body.templateId).toBe('67ddf9f2d00bfe7403bffadf');
     expect(res.body.projectId).toBe('67de8c6f98f0ee0db7661c2e');
 
     const agentId = res.body.id;
+    console.log(agentId);
 
     res = await request(app.getHttpServer())
       .post(`/api/agent/${agentId}/chat`)
