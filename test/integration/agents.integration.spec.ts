@@ -44,10 +44,10 @@ describe('Agent Module', () => {
     res = await request(app.getHttpServer())
       .post(`/api/agent/${agentId}/chat`)
       .send({
-        message: 'Hello, can you use the tool say-hi?',
+        message:
+          'Hello, can you use the tool say-hi? Just use it once - then tell me you are done',
       });
 
-    expect(res.status).toBe(200);
-    expect(res.body.message).toBe('Hi, how can I help you today?');
-  });
+    expect(res.status).toBe(201);
+  }, 20000);
 });

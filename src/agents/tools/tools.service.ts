@@ -30,11 +30,11 @@ export class ToolsService {
     this.globalToolMap = {
       'say-hi': async (args: any) => {
         console.log('Hi from tool call');
-        return `Hi ${args.query}`;
+        return `Hi`;
       },
       'say-bye': async (args: any) => {
         console.log('Bye from tool call');
-        return `Bye ${args.query}`;
+        return `Bye`;
       },
     };
   }

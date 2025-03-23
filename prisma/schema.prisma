@@ -32,6 +32,8 @@ model Message {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   toolName String?
+  tool_call_id String?
+  tool_calls Json[] @default([])
 
   agent Agent @relation(fields: [agentId], references: [id])
   agentMessages AgentMessage?
