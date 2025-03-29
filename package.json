@@ -18,8 +18,8 @@
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/e2e/jest-e2e.json",
-    "test:integration": "jest --config ./test/integration/jest-e2e.json",
-    "test:integration:watch": "jest --watch --config ./test/integration/jest-e2e.json"
+    "test:integration": "jest --config ./test/integration/jest-integration.json",
+    "test:integration:watch": "jest --watch --config ./test/integration/jest-integration.json"
   },
   "dependencies": {
     "@langchain/core": "^0.3.42",
@@ -28,8 +28,10 @@
     "@nestjs/common": "^11.0.1",
     "@nestjs/config": "^4.0.1",
     "@nestjs/core": "^11.0.1",
+    "@nestjs/mapped-types": "^2.1.0",
     "@nestjs/platform-express": "^11.0.1",
     "@prisma/client": "^6.5.0",
+    "axios": "^1.8.4",
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.1",
     "dotenv": "^16.4.7",

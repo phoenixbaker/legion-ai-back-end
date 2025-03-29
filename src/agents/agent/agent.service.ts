@@ -2,15 +2,20 @@ import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../prisma/prisma.service';
 import { Agent, Message } from '@prisma/client';
 import {
-  ChatCompletion,
+  ChatCompletionAssistantMessageParam,
+  ChatCompletionDeveloperMessageParam,
+  ChatCompletionFunctionMessageParam,
   ChatCompletionMessage,
   ChatCompletionMessageParam,
   ChatCompletionMessageToolCall,
-  ChatCompletionToolChoiceOption,
+  ChatCompletionSystemMessageParam,
   ChatCompletionToolMessageParam,
+  ChatCompletionUserMessageParam,
 } from 'openai/resources/chat';
 import { ToolsService } from '../tools/tools.service';
 import { OpenaiService } from '../openai/openai.service';
+import { FullAgent } from './types/full-agent.type';
+import { TemplateService } from '../template/template.service';
 
 @Injectable()
 export class AgentService {
@@ -18,9 +23,10 @@ export class AgentService {
     private prisma: PrismaService,
     private toolsService: ToolsService,
     private openai: OpenaiService,
+    private templateService: TemplateService,
   ) {}
 
-  public async getAgent(id: string): Promise<Agent | null> {
+  public async getAgent(id: string): Promise<FullAgent | null> {
     return this.prisma.agent.findUnique({
       where: { id },
       include: {
@@ -36,6 +42,9 @@ export class AgentService {
   public async deleteAgent(id: string): Promise<Agent> {
     return this.prisma.agent.delete({
       where: { id },
+      include: {
+        messages: true,
+      },
     });
   }
 
@@ -43,41 +52,41 @@ export class AgentService {
     templateId: string,
     projectId: string,
   ): Promise<Agent> {
-    return this.prisma.agent.create({
+    const template =
+      await this.templateService.getAgentTemplateById(templateId);
+    const agent = await this.prisma.agent.create({
       data: {
-        templateId,
-        projectId,
+        messages: {
+          create: {
+            role: 'system',
+            content: template?.systemPrompt,
+          },
+        },
+        template: {
+          connect: {
+            id: templateId,
+          },
+        },
+        project: {
+          connect: { id: projectId },
+        },
       },
     });
+
+    return agent;
   }
 
   public async sendMessage(
     agentId: string,
     message: string | null,
-    toolCalled: boolean = false,
     currentRetries: number = 0,
   ) {
-    const agent = await this.prisma.agent.findUnique({
-      where: { id: agentId },
-      include: {
-        messages: true,
-        template: true,
-      },
-    });
+    if (message) await this.saveUserMessage(agentId, message);
 
-    if (!agent) {
-      throw new Error('Agent not found');
-    }
+    const agent = await this.getAgent(agentId);
+    if (!agent) throw new Error('Agent not found');
 
-    const messages = this.formatMessages(agent.messages, message, toolCalled);
-    console.log(
-      messages.map((m) => {
-        // @ts-ignore
-        return m.tool_calls;
-      }),
-    );
-    if (message) this.saveMessage(agentId, message);
-
+    const messages = this.formatMessageHistory(agent.messages);
     let tools = this.toolsService.getTools(agent.template.tools);
 
     if (currentRetries >= 3) tools = undefined as any;
@@ -91,34 +100,16 @@ export class AgentService {
     });
 
     if (!response.choices || response.choices.length === 0) {
-      throw new Error('No choices returned from OpenAI API');
+      console.log({ response });
+      throw new Error(`No choices returned from OpenAI API`);
     }
-
     const assistantMessage = response.choices[0].message;
-    const toolCalls = assistantMessage.tool_calls;
-    const content = assistantMessage.content;
+    await this.saveAssistantMessage(agentId, assistantMessage);
 
-    if (toolCalls && toolCalls.length > 0 && currentRetries < 3) {
-      await this.prisma.message.create({
-        data: {
-          role: 'assistant',
-          content: assistantMessage.content || '',
-          agentId,
-          tool_calls: (assistantMessage.tool_calls as any) || [],
-        },
-      });
-      await this.handleToolCalls(toolCalls, agentId);
-      return this.sendMessage(agentId, '', true, currentRetries + 1);
-    }
-
-    if (content) {
-      await this.prisma.message.create({
-        data: {
-          role: 'assistant',
-          content,
-          agentId,
-        },
-      });
+    const { tool_calls } = assistantMessage;
+    if (tool_calls && tool_calls.length > 0 && currentRetries < 3) {
+      await this.handleToolCalls(tool_calls, agentId);
+      return this.sendMessage(agentId, null, currentRetries + 1);
     }
 
     return {
@@ -126,12 +117,41 @@ export class AgentService {
     };
   }
 
-  private async saveMessage(agentId: string, message: string) {
+  private async saveAssistantMessage(
+    agentId: string,
+    message: ChatCompletionMessage,
+  ) {
     await this.prisma.message.create({
       data: {
-        agentId,
+        ...message,
+        audio: message.audio ? JSON.parse(JSON.stringify(message.audio)) : null,
+        annotations:
+          message.annotations && message.annotations.length > 0
+            ? JSON.parse(JSON.stringify(message.annotations))
+            : [],
+        tool_calls:
+          message.tool_calls && message.tool_calls.length > 0
+            ? JSON.parse(JSON.stringify(message.tool_calls))
+            : [],
+        agent: {
+          connect: {
+            id: agentId,
+          },
+        },
+      },
+    });
+  }
+
+  private async saveUserMessage(agentId: string, message: string) {
+    await this.prisma.message.create({
+      data: {
         content: message,
         role: 'user',
+        agent: {
+          connect: {
+            id: agentId,
+          },
+        },
       },
     });
   }
@@ -144,75 +164,70 @@ export class AgentService {
       toolCalls.map((toolCall) => this.toolsService.executeTool(toolCall)),
     );
 
-    // Create tool response messages with proper tool_call_id references
-    const toolMessages = toolCallResults.map((result, index) => {
-      return {
-        content: JSON.stringify(result),
-        role: 'tool',
-        toolName: toolCalls[index].function.name,
-        tool_call_id: toolCalls[index].id,
-        agentId,
-      };
-    });
-
-    // Store all tool response messages together to maintain order
-    await this.prisma.message.createMany({
-      data: toolMessages,
-    });
+    toolCallResults.forEach((result, index) =>
+      this.saveToolCallResult(result, toolCalls[index].id, agentId),
+    );
   }
 
-  private formatMessages(
-    messages: Message[],
-    newMessage: string | null,
-    toolCalled: boolean = false,
+  private async saveToolCallResult(
+    result: any,
+    toolCallId: string,
+    agentId: string,
   ) {
-    // If tool was called and there's no new message, just return the message history
-    if (toolCalled) {
-      // Check the most recent messages to see if there are any tool calls
-      // This helps the model understand the context of what has already been done
-      const formattedHistory = this.formatMessageHistory(messages);
-
-      // If this is a continuation after tool calls, make sure we have at least:
-      // 1. The original user message
-      // 2. The assistant message that triggered the tool
-      // 3. The tool response message(s)
-
-      return formattedHistory;
-    }
-
-    if (!newMessage)
-      throw new Error('New message is required if tool has not been called');
-
-    return this.formatNewMessageWithHistory(messages, newMessage);
-  }
-
-  private formatNewMessageWithHistory(
-    messageHistory: Message[],
-    newMessage: string,
-  ): ChatCompletionMessageParam[] {
-    const formattedMessageHistory = this.formatMessageHistory(messageHistory);
-    return [...formattedMessageHistory, { role: 'user', content: newMessage }];
+    await this.prisma.message.create({
+      data: {
+        role: 'tool',
+        content: JSON.stringify(result),
+        tool_call_id: toolCallId,
+        agent: {
+          connect: {
+            id: agentId,
+          },
+        },
+      },
+    });
   }
 
   private formatMessageHistory(
     messages: Message[],
   ): ChatCompletionMessageParam[] {
     return messages.map((message): ChatCompletionMessageParam => {
-      if (message.role === 'tool') {
-        return {
-          role: message.role,
-          content: message.content,
-          tool_call_id: message.tool_call_id,
-        } as ChatCompletionToolMessageParam;
+      switch (message.role as ChatCompletionMessageParam['role']) {
+        case 'user':
+          return {
+            role: message.role,
+            content: message.content,
+          } as ChatCompletionUserMessageParam;
+        case 'assistant':
+          return {
+            role: message.role,
+            content: message.content,
+            audio: (message.audio as any) || undefined,
+            refusal: message.refusal || undefined,
+            tool_calls: (message.tool_calls as any) || undefined,
+          } as ChatCompletionAssistantMessageParam;
+        case 'tool':
+          return {
+            role: message.role as any,
+            content: message.content,
+            tool_call_id: message.tool_call_id,
+          } as ChatCompletionToolMessageParam;
+        case 'system':
+          return {
+            role: message.role as any,
+            content: message.content,
+          } as ChatCompletionSystemMessageParam;
+        case 'developer':
+          return {
+            role: message.role as any,
+            content: message.content,
+          } as ChatCompletionDeveloperMessageParam;
+        case 'function':
+          return {
+            role: message.role as any,
+            content: message.content,
+          } as ChatCompletionFunctionMessageParam;
       }
-      return {
-        role: message.role as 'user' | 'assistant',
-        content: message.content,
-        tool_calls:
-          message.tool_calls.length > 0
-            ? (message.tool_calls as any)
-            : undefined,
-      };
     });
   }
 }
