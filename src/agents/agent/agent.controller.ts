@@ -1,6 +1,6 @@
 import { Body, Controller, Delete, Get, Param, Post } from '@nestjs/common';
 import { AgentService } from './agent.service';
-import { CreateAgentDto, MessageAgentDto } from './dto';
+import { CreateAgentDto } from './dto';
 
 @Controller('agent')
 export class AgentController {
@@ -19,10 +19,5 @@ export class AgentController {
   @Post()
   async createAgent(@Body() dto: CreateAgentDto) {
     return await this.agentService.createAgent(dto.templateId, dto.projectId);
-  }
-
-  @Post(':id/chat')
-  async messageAgent(@Param('id') id: string, @Body() dto: MessageAgentDto) {
-    return await this.agentService.sendMessage(id, dto.message);
   }
 }

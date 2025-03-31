@@ -8,6 +8,5 @@ export class CreateProjectDto {
   name: string;
 
   @IsString()
-  @IsNotEmpty()
-  containerId: string;
+  containerId?: string;
 }

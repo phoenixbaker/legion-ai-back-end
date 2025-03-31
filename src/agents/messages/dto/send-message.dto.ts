@@ -1,6 +1,6 @@
 import { IsNotEmpty, IsString } from 'class-validator';
 
-export class MessageAgentDto {
+export class SendMessageDto {
   @IsString()
   @IsNotEmpty()
   message: string;

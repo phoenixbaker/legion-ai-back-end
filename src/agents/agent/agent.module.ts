@@ -2,7 +2,7 @@ import { Module } from '@nestjs/common';
 import { AgentService } from './agent.service';
 import { TemplateService } from '../template/template.service';
 import { ToolsService } from '../tools/tools.service';
-import { PrismaService } from '../../prisma/prisma.service';
+import { PrismaService } from '../../common/prisma/prisma.service';
 import { AgentController } from './agent.controller';
 import { OpenaiService } from '../openai/openai.service';
 

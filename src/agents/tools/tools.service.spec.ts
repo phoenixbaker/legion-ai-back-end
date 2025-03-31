@@ -18,12 +18,12 @@ describe('ToolsService', () => {
   });
 
   it('should get tools', () => {
-    const result = service.getTools(['say-hi']);
+    const result = service.getTools(['execute-cli']);
 
     expect(result).toBeDefined();
     expect(result.length).toBe(1);
     expect(result[0].type).toBe('function');
-    expect(result[0].function.name).toBe('say-hi');
+    expect(result[0].function.name).toBe('execute-cli');
   });
 
   it('should register a tool', () => {

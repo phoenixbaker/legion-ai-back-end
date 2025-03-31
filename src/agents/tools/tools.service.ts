@@ -250,7 +250,7 @@ export class ToolsService {
     this.toolDefinitions[name] = chatCompletionTool;
   }
 
-  public getTools(tools: string[]) {
+  public getTools(tools: string[]): ChatCompletionTool[] {
     return tools.map((tool) => this.toolDefinitions[tool]);
   }
 
@@ -261,5 +261,9 @@ export class ToolsService {
 
     const toolFunction = this.globalToolMap[toolName];
     return toolFunction(toolArgs);
+  }
+
+  public async handleToolCalls(toolCalls: ChatCompletionMessageToolCall[]) {
+    return Promise.all(toolCalls.map((toolCall) => this.executeTool(toolCall)));
   }
 }
