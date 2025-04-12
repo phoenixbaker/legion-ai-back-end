@@ -47,7 +47,7 @@ describe('Agent Module', () => {
   it('should send a message to the agent', async () => {
     const prompt = 'Can you print "Hello, world!"? through running js';
     let res = await request(app.getHttpServer())
-      .post(`/api/agent/${agentId}/chat`)
+      .post(`/api/agent/${agentId}/messages`)
       .send({
         message: prompt,
       });

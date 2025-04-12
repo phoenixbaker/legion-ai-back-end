@@ -5,8 +5,9 @@ import { ToolsService } from '../tools/tools.service';
 import { OpenaiService } from '../openai/openai.service';
 import { FullAgent } from './types/full-agent.type';
 import { TemplateService } from '../template/template.service';
-import { MessagesService } from '../messages/messages.service';
 import { LoggerService } from '../../common/logger/logger.service';
+import { formatMessageHistory } from '../messages/utils';
+
 @Injectable()
 export class AgentService {
   constructor(
@@ -14,7 +15,6 @@ export class AgentService {
     private toolsService: ToolsService,
     private openai: OpenaiService,
     private templateService: TemplateService,
-    private messagesService: MessagesService,
     private logger: LoggerService,
   ) {
     this.logger.defaultContext = 'AgentService';
@@ -83,7 +83,7 @@ export class AgentService {
         model: agent.template.model,
         temperature: agent.template.temperature ?? 0.7,
         tool_choice: 'auto',
-        messages: this.messagesService.formatMessageHistory(agent.messages),
+        messages: formatMessageHistory(agent.messages),
         tools: this.toolsService.getTools(agent.template.tools),
       });
       if (!response.choices || response.choices.length === 0) {

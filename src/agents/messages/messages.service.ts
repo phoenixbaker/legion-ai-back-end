@@ -1,15 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../../common/prisma/prisma.service';
-import { Message } from '@prisma/client';
 import { AgentService } from '../agent/agent.service';
 import { ChatCompletionMessage } from 'openai/resources/index';
 import { ToolsService } from '../tools/tools.service';
 import { LoggerService } from '../../common/logger/logger.service';
 import { UpdateMessageDto } from './dto';
-import {
-  formatMessageHistory as formatMessageHistoryUtil,
-  toolCalled as toolCalledUtil,
-} from './utils';
+import { toolCalled } from './utils';
 import { FullMessage } from './types';
 
 @Injectable()
@@ -89,7 +85,7 @@ export class MessagesService {
       await this.agentService.handleAgentMessage(agentId);
     await this.saveAssistantMessage(agentId, assistantMessage);
 
-    if (this.toolCalled(assistantMessage.tool_calls)) {
+    if (toolCalled(assistantMessage.tool_calls)) {
       const { tool_calls: toolCalls } = assistantMessage;
       const toolCallResults =
         await this.toolsService.handleToolCalls(toolCalls);
@@ -163,7 +159,4 @@ export class MessagesService {
       },
     });
   }
-
-  public formatMessageHistory = formatMessageHistoryUtil;
-  public toolCalled = toolCalledUtil;
 }

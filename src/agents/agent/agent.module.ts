@@ -1,19 +1,14 @@
 import { Module } from '@nestjs/common';
 import { AgentService } from './agent.service';
-import { TemplateService } from '../template/template.service';
-import { ToolsService } from '../tools/tools.service';
-import { PrismaService } from '../../common/prisma/prisma.service';
 import { AgentController } from './agent.controller';
-import { OpenaiService } from '../openai/openai.service';
+import { TemplateModule } from '../template/template.module';
+import { ToolsModule } from '../tools/tools.module';
+import { PrismaModule } from '../../common/prisma/prisma.module';
+import { OpenaiModule } from '../openai/openai.module';
 
 @Module({
-  providers: [
-    AgentService,
-    TemplateService,
-    ToolsService,
-    PrismaService,
-    OpenaiService,
-  ],
+  imports: [TemplateModule, ToolsModule, PrismaModule, OpenaiModule],
+  providers: [AgentService],
   exports: [AgentService],
   controllers: [AgentController],
 })
