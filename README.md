@@ -1,98 +1,115 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# Legion AI Backend
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+## 🤖 Overview
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg" alt="Donate us"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow" alt="Follow us on Twitter"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+Legion AI is a powerful agent-based AI framework built with NestJS that enables you to create, manage, and orchestrate multiple AI agents. The platform provides a flexible architecture for building AI applications with support for:
 
-## Description
+- ✅ **Multi-Agent Communication**: Allow agents to communicate with each other
+- ✅ **Tool Integration**: Execute CLI commands, make API calls, search the web, and more
+- ✅ **Template-Based Agents**: Create reusable agent templates with predefined capabilities
+- ✅ **OpenAI Integration**: Seamlessly integrate with OpenAI's latest models
+- ✅ **Project Management**: Organize agents within project contexts
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+## 🔧 Tech Stack
 
-## Project setup
+- **Backend**: NestJS (TypeScript)
+- **Database**: MongoDB (via Prisma ORM)
+- **AI Integration**: OpenAI API, OpenRouter
+- **Additional**: Docker for containerization
 
-```bash
-$ npm install
-```
+## 📋 Prerequisites
 
-## Compile and run the project
+- Node.js (v18+)
+- npm or yarn
+- MongoDB
+- Docker (optional, for containerization)
+
+## 🚀 Getting Started
+
+### Installation
+
+1. Clone the repository
 
 ```bash
-# development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+git clone https://github.com/yourusername/legion-ai-backend.git
+cd legion-ai-backend
 ```
 
-## Run tests
+2. Install dependencies
 
 ```bash
-# unit tests
-$ npm run test
-
-# e2e tests
-$ npm run test:e2e
-
-# test coverage
-$ npm run test:cov
+npm install
 ```
 
-## Deployment
-
-When you're ready to deploy your NestJS application to production, there are some key steps you can take to ensure it runs as efficiently as possible. Check out the [deployment documentation](https://docs.nestjs.com/deployment) for more information.
-
-If you are looking for a cloud-based platform to deploy your NestJS application, check out [Mau](https://mau.nestjs.com), our official platform for deploying NestJS applications on AWS. Mau makes deployment straightforward and fast, requiring just a few simple steps:
+3. Set up environment variables
 
 ```bash
-$ npm install -g mau
-$ mau deploy
+cp .env.example .env
 ```
 
-With Mau, you can deploy your application in just a few clicks, allowing you to focus on building features rather than managing infrastructure.
+Edit the `.env` file with your configuration:
 
-## Resources
+```
+DATABASE_URL="mongodb://username:password@localhost:5432/legion_ai"
+OPENROUTER_API_KEY="your_openrouter_api_key"
+OPENROUTER_BASE_URL="https://openrouter.ai/api/v1"
+```
 
-Check out a few resources that may come in handy when working with NestJS:
+4. Run database migrations
 
-- Visit the [NestJS Documentation](https://docs.nestjs.com) to learn more about the framework.
-- For questions and support, please visit our [Discord channel](https://discord.gg/G7Qnnhy).
-- To dive deeper and get more hands-on experience, check out our official video [courses](https://courses.nestjs.com/).
-- Deploy your application to AWS with the help of [NestJS Mau](https://mau.nestjs.com) in just a few clicks.
-- Visualize your application graph and interact with the NestJS application in real-time using [NestJS Devtools](https://devtools.nestjs.com).
-- Need help with your project (part-time to full-time)? Check out our official [enterprise support](https://enterprise.nestjs.com).
-- To stay in the loop and get updates, follow us on [X](https://x.com/nestframework) and [LinkedIn](https://linkedin.com/company/nestjs).
-- Looking for a job, or have a job to offer? Check out our official [Jobs board](https://jobs.nestjs.com).
+```bash
+npx prisma migrate dev
+```
 
-## Support
+5. Start the development server
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+```bash
+npm run start:dev
+```
 
-## Stay in touch
+## 🏗️ Architecture
 
-- Author - [Kamil Myśliwiec](https://twitter.com/kammysliwiec)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+Legion AI is built with a modular architecture:
 
-## License
+- **Agent Module**: Core functionality for creating and managing AI agents
+- **Template Module**: Manages agent templates with predefined capabilities
+- **Tools Module**: Provides a set of tools that agents can use to interact with the world
+- **OpenAI Module**: Handles integration with OpenAI and OpenRouter
+- **Messages Module**: Manages communication between agents
+- **Project Module**: Organizes agents into projects
+- **Docker Module**: Handles containerization for isolated agent environments
 
-Nest is [MIT licensed](https://github.com/nestjs/nest/blob/master/LICENSE).
+## 🛠️ Available Tools
+
+Agents in Legion AI can use several built-in tools:
+
+1. **CLI Execution**: Execute commands in a controlled environment
+2. **Web Search**: Search the web for information
+3. **API Calls**: Make HTTP requests to external services
+4. **Agent Communication**: Send messages to other agents
+
+## 📚 API Documentation
+
+API endpoints are available at `/api` when running the server. Key endpoints include:
+
+- `/agents`: CRUD operations for agents
+- `/templates`: Manage agent templates
+- `/projects`: Organize agents into projects
+- `/messages`: Handle agent communications
+
+## 🧪 Testing
+
+```bash
+# Unit tests
+npm run test
+
+# E2E tests
+npm run test:e2e
+
+# Integration tests
+npm run test:integration
+```
+
+## 🤝 Contributing
+
+Contributions are welcome! Please feel free to submit a Pull Request.
