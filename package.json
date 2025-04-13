@@ -19,7 +19,8 @@
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/e2e/jest-e2e.json",
     "test:integration": "jest --config ./test/integration/jest-integration.json",
-    "test:integration:watch": "jest --watch --config ./test/integration/jest-integration.json"
+    "test:integration:watch": "jest --watch --config ./test/integration/jest-integration.json",
+    "docker:integration": "docker-compose -f docker/docker-compose.integration.yml up --build --abort-on-container-exit --exit-code-from backend-integration --no-attach db"
   },
   "dependencies": {
     "@langchain/core": "^0.3.42",

@@ -1,0 +1,30 @@
+version: '3.8'
+
+services:
+  backend-integration:
+    build: ../
+    env_file:
+      - ../.env
+    environment:
+      - MONGODB_URL=mongodb://db:27017/legion_ai-integration?replicaSet=rs0
+    ports:
+      - 3000:3000
+    depends_on:
+      - db
+    command: >
+      sh -c "
+        npx prisma generate &&
+        npx prisma db push &&
+        npx ts-node scripts/initProject.ts &&
+        npx ts-node scripts/initTemplates.ts &&
+        npm run test:integration
+      "
+
+  db:
+    image: bitnami/mongodb:latest
+    ports:
+      - 27017:27017
+    environment:
+      - MONGODB_REPLICA_SET_MODE=primary
+      - MONGODB_REPLICA_SET_NAME=rs0
+      - ALLOW_EMPTY_PASSWORD=yes

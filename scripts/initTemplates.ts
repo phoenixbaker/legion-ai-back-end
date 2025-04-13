@@ -3,11 +3,9 @@ import { AgentTemplate, PrismaClient } from '@prisma/client';
 import { config } from 'dotenv';
 config();
 
-const baseAgentTemplates: Omit<
-  AgentTemplate,
-  'id' | 'createdAt' | 'updatedAt'
->[] = [
+const baseAgentTemplates: Omit<AgentTemplate, 'createdAt' | 'updatedAt'>[] = [
   {
+    id: '67ddf9f2d00bfe7403bffadf',
     name: 'Project Manager',
     systemPrompt: 'You are a helpful assistant.',
 
@@ -22,10 +20,23 @@ const baseAgentTemplates: Omit<
   },
 ];
 
-const prisma = new PrismaClient();
+async function main() {
+  const prisma = new PrismaClient();
 
-baseAgentTemplates.forEach(async (template) => {
-  await prisma.agentTemplate.create({
-    data: template,
-  });
+  // Use Promise.all to properly await all operations
+  await Promise.all(
+    baseAgentTemplates.map((template) =>
+      prisma.agentTemplate.create({
+        data: template,
+      }),
+    ),
+  );
+
+  console.log('Agent templates created successfully');
+  await prisma.$disconnect();
+}
+
+main().catch((e) => {
+  console.error(e);
+  process.exit(1);
 });
